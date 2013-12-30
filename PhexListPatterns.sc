@@ -1,11 +1,11 @@
 // abstract factory for creating list patterns that
-// take Phex style hex strings as input.
+// take Phex style hex strings as inputs.
 HexListPattern {
 	*new { |string=" " spec repeats=inf listPattern|
 		// use default spec if none provided
 		spec = (spec ?? { [0, 15] }).asSpec;
 
-		^listPattern.(string.phexToArray(spec), repeats)
+		^listPattern.new(string.phexToPatternList(spec), repeats)
 	}
 }
 
@@ -16,7 +16,7 @@ Phex {
 	}
 }
 
-// a Phuf is the Phex equivalent of a pshuf
+// a Phuf is the Phex equivalent of a Pshuf
 Phuf {
 	*new { |string=" " spec repeats=inf|
 		^HexListPattern(string, spec, repeats, Pshuf);
