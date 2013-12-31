@@ -3,7 +3,7 @@
 	// of values mapped according to spec and
 	// with spaces replaced with \rests
 	phexToPatternList { |spec|
-		var getSubPhex;
+		var getSubPhex, phexStack = [], mode = \parsing, tokenStack;
 
 		var a = [], i = 0;
 		
@@ -11,15 +11,20 @@
 		spec = (spec ?? { [0, 16] }).asSpec;
 
 		getSubPhex = {
-			var subPhex = "";
+			var subPhex = "", nSubPhexs = 1;
 			
 			// shift i along until we find a . or the end of the Phex
-			while({ (this.at(i) != $\.) && (i < this.size) }) {
-				subPhex = subPhex ++ this.at(i);
+			while({ (nSubPhexs > 0) && (i < this.size) }) {
 				i = i + 1;
+
+				if(this.at(i) == $\.) { 
+					nSubPhexs = nSubPhexs - 1;
+				} {
+					subPhex = subPhex ++ this.at(i);
+				};
 			};
 
-			subPhex;
+			subPhex.postln;
 		};
 
 		// step through each of the tokens
@@ -35,7 +40,6 @@
 				
 				// ? is random in full range of spec
 				$\?, { 
-					i = i + 1;
 					Phuf(getSubPhex.(), spec, 1); 
 				},
 				
@@ -43,16 +47,16 @@
 				// n times
 				$\*, { 
 					var repeats;
-					
-					// get the number of repetions as param for *
-					repeats = this.at(i + 1).digit.clip(0, 15);
 
 					// skip over repeats param 
-					i = i + 2;
+					i = i + 1;
+					
+					// get the number of repetions as param for *
+					repeats = this.at(i).digit.clip(0, 15);
 
 					// make patterns from our subphex
 					Phex(getSubPhex.(), spec, repeats);
-				},
+				}
 			);
 
 			// if character hasn't been mapped yet map it from hex using spec
@@ -66,3 +70,4 @@
 		^a;
 	}
 }
+"2*ff.ee?123.3".phexToPatternList([0, 1])
