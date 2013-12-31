@@ -3,28 +3,39 @@
 	// of values mapped according to spec and
 	// with spaces replaced with \rests
 	phexToPatternList { |spec|
-		var getSubPhex, phexStack = [], mode = \parsing, tokenStack;
+		// TODO - make dictionary of "command" characters - way neater
+		// can outer phex/subphex thing be made made with only one loop? - do 
+		// I need to getSubPhex?
+	
+		var getSubPhex;
 
 		var a = [], i = 0;
 		
 		// make sure we have a spec of some sort to map characters with
 		spec = (spec ?? { [0, 16] }).asSpec;
 
+		// function to handle recursively parsing subphexs
 		getSubPhex = {
 			var subPhex = "", nSubPhexs = 1;
 			
+			i = i + 1;
+
 			// shift i along until we find a . or the end of the Phex
 			while({ (nSubPhexs > 0) && (i < this.size) }) {
-				i = i + 1;
+				switch(this.at(i),
+					$\., { nSubPhexs = nSubPhexs - 1 },
+					$\?, { nSubPhexs = nSubPhexs + 1 },
+					$\*, { nSubPhexs = nSubPhexs + 1 }
+				);
 
-				if(this.at(i) == $\.) { 
-					nSubPhexs = nSubPhexs - 1;
-				} {
+				if(this.at(i).isAlphaNum) { 
 					subPhex = subPhex ++ this.at(i);
 				};
+
+				i = i + 1;
 			};
 
-			subPhex.postln;
+			subPhex;
 		};
 
 		// step through each of the tokens
@@ -70,4 +81,3 @@
 		^a;
 	}
 }
-"2*ff.ee?123.3".phexToPatternList([0, 1])
