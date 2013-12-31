@@ -5,7 +5,7 @@ Phattern {
 
 	var length;
 
-	var channel;
+	var <channel;
 
 	var <outProxy;
 
@@ -28,7 +28,7 @@ Phattern {
 
 		// set patterns to route audio to correct bits of mixer
 		this.updatePatterns(\out, channel.bus); 
-		this.updatePatterns(\group, channel.group.sources); 
+		this.updatePatterns(\group, channel.groups.sources); 
 	}
 
 	synth_ { |syn|
