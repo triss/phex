@@ -28,11 +28,10 @@
 					$\*, { nSubPhexs = nSubPhexs + 1 }
 				);
 
-				if(this.at(i).isAlphaNum) { 
+				if(nSubPhexs > 0) { 
 					subPhex = subPhex ++ this.at(i);
+					i = i + 1;
 				};
-
-				i = i + 1;
 			};
 
 			subPhex;
@@ -59,7 +58,7 @@
 				$\*, { 
 					var repeats;
 
-					// skip over repeats param 
+					// shift to repeats param 
 					i = i + 1;
 					
 					// get the number of repetions as param for *
@@ -67,10 +66,9 @@
 
 					// make patterns from our subphex
 					Phex(getSubPhex.(), spec, repeats);
-				}
+				},
 			);
 
-			// if character hasn't been mapped yet map it from hex using spec
 			item = item ?? { spec.map(token.digit.clip(0, 15) / 15) };
 
 			a = a.add(item);

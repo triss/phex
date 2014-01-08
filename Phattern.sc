@@ -77,6 +77,10 @@ Phattern {
 		^channel.fx;
 	}
 
+	setFx { |name def|
+		channel.setFx(name, def);
+	}
+
 	synth_ { |syn|
 		synth = syn;
 		this.changed(\synth);

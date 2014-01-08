@@ -12,6 +12,10 @@ PhexSpecs {
 		Spec.add(\moogRez, [0.001, 4, \exp, 0, 3]);
 		Spec.add(\dfmRez, [0.001, 1.1, \exp, 0, 0.5]);
 
+		// some modulation synth specs I always end up using (particualrily with PM)
+		Spec.add(\mfreq, \freq.asSpec);
+		Spec.add(\index, [0, 50, \exp]);
+
 		// vibrato and tremelo
 		Spec.add(\vibrato, [0, 1]);
 		Spec.add(\vibratoRate, [0, 10]);

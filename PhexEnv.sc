@@ -184,6 +184,7 @@ PhexEnv {
 
 				// if it's a buffer just store it - I often need these hanging around
 				{ val.isKindOf(Buffer) }, { },
+				{ val.isKindOf(Function) }, { },
 
 				// sometimes i want collections of things hanging around to store stuff in
 				{ (val.isKindOf(Collection)) && (val.isKindOf(String).not) }, { },
