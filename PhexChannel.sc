@@ -19,7 +19,9 @@ PhexChannel {
 			// handles amp and pan of a channel - out is both in and out!
 			SynthDef.writeOnce(
 				\phexAmpPan, { |out=0 amp=1 pan=0|
-					ReplaceOut.ar(out, Pan2.ar(In.ar(out, 2), pan, amp));
+					ReplaceOut.ar(out, 
+						Splay.ar(In.ar(out, 2), level: amp, center: pan)
+					);
 				}, 
 				rates: [\ir, 0.05, 0.05],
 				metadata: (specs: (amp: \amp, pan: \pan))
@@ -47,7 +49,7 @@ PhexChannel {
 		^super.new.init(out, parentGroup);
 	}
 
-	init { |out, parentGroup|
+	init { |out parentGroup|
 		// set parent group to default group if none specified
 		parentGroup = parentGroup ?? { Server.default };
 	  
@@ -108,7 +110,7 @@ PhexChannel {
 		var addAction = \addBefore;
 		
 		// if an fx already exists fade it out
-		if(fx.contains[name]) {
+		if(fx.includesKey(name)) {
 			fx[name].release(fadeTime);
 		};
 
@@ -121,13 +123,13 @@ PhexChannel {
 
 		// so long as a fx def name is specified insert the fx
 		if(synthDef.notNil) {
-			fx[name] = Synth(synthDef, args, target, addAction);
+			fx[name] = Synth(synthDef, [\out, bus] ++ args, target, addAction);
 		};
 
 		this.changed(\fx, name, synthDef);
 	}
 
-	makeView { |parent, bounds|
+	makeView { |parent bounds|
 		var view, levelIndicator, levelUpdater;
 	 
 		bounds = bounds ?? { 50@250 };
@@ -137,6 +139,7 @@ PhexChannel {
 		levelIndicator = LevelIndicator();
 
 		view.layout_(VLayout(
+			// pan knob
 			Knob()
 				.centered_(true)
 				.value_(0.5)
@@ -144,6 +147,7 @@ PhexChannel {
 					this.setPan(\pan.asSpec.map(k.value));
 				}),
 			HLayout(
+				// amp
 				[
 					Slider()
 						.value_(\db.asSpec.unmap(1.ampdb))
@@ -152,8 +156,11 @@ PhexChannel {
 						}),
 					stretch: 3
 				],
-				[levelIndicator,stretch: 1],
+
+				// peak meter
+				[levelIndicator, stretch: 1],
 			),
+			// sends
 			*sends.collect { |v, k| 
 				VLayout(
 					StaticText().string_(k).align_(\center),
@@ -165,9 +172,12 @@ PhexChannel {
 			}.asArray.flatten
 		));
 
+		// stop the view from getting stretched such that its unrecognisable
+		view.maxWidth_(50);
+
 		levelUpdater = {
 			inf.do {
-				rmsBus.get({ |amp| { levelIndicator.value = amp.postln }.defer });
+				rmsBus.get({ |amp| { levelIndicator.value = amp }.defer });
 				0.1.wait;
 			};
 		}.fork;

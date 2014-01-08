@@ -1,21 +1,53 @@
 Phattern {
 	var synth;
 	
-	var pProxies;
+	var <pProxies;
 
 	var length;
 
 	var <channel;
 
+	var <>buffers;
+
 	var <outProxy;
 
 	var <specs;
 
-	*new { |synth|
-		^super.new.init(synth);
+	*initClass {
+		StartUp.add {
+			SynthDef.writeOnce(\phampler, {
+				arg out = 0, buffer, sustain = 1, startPos = 0, rate = 1, 
+				amp = 0.1, pan = 0, cutoff = 18000, rez = 1;
+
+				var sig, env;
+				
+				// so tbufferha sounds cut one another off nicely... like groups in a 
+				// normal sampler
+				env = EnvGen.ar(Env.linen(0, sustain, 0.01), doneAction: 2);
+
+				sig = PlayBuf.ar(
+					1, buffer, 
+					rate: BufRateScale.kr(buffer) * rate,
+					startPos: startPos * BufFrames.kr(buffer),
+					doneAction: 2
+				);
+
+				sig = RLPF.ar(sig, cutoff, rez);
+
+				sig = sig * amp;
+
+				sig = Pan2.ar(sig, pan);
+
+				OffsetOut.ar(out, sig);
+			})
+		};
 	}
 
-	init { |syn|
+	*new { |synth|
+		^super.new.initPhattern(synth);
+	}
+
+	initPhattern { |syn|
 		this.synth_(syn);
 
 		pProxies = IdentityDictionary();
@@ -26,9 +58,23 @@ Phattern {
 		// create a mixer channel for audio and fx to live on
 		channel = PhexChannel();
 
+		buffers = IdentityDictionary();
+
 		// set patterns to route audio to correct bits of mixer
 		this.updatePattern(\out, channel.bus); 
 		this.updatePattern(\group, channel.groups.sources); 
+	}
+
+	play {
+		this.outProxy.play;
+	}
+
+	stop {
+		this.outProxy.stop;
+	}
+
+	fx {
+		^channel.fx;
 	}
 
 	synth_ { |syn|
@@ -42,7 +88,8 @@ Phattern {
 			var spec;
 
 			if(specs.includesKey(param)) {
-				// if a spec has been set for this param on this Phattern use that
+				// if a spec has been set for this param on 
+				// this Phattern use that
 				spec = specs[param];
 			} {
 				// otherwise look in synth metadata
@@ -80,20 +127,34 @@ Phattern {
 	// if we don't understand the message it's a pattern being updated or 
 	// recalled.
 	doesNotUnderstand { |selector val| 
+		// if this is a setter update the pattern
 		if(selector.isSetter) {
-			// if this is a setter upfate the pattern
-			this.updatePattern(selector.asGetter, val);
+			selector = selector.asGetter;
+
+			// handle special buffer key when strings are passed in by mapping
+			// to buffers dictionary
+			if((selector == \buffer) && (val.isString)) {
+				var seq = List();
+				val.do { |c|
+					if(buffers[c.asSymbol].notNil) {
+						// if we have a buffer assigned to this character use it
+						seq.add(buffers[c.asSymbol]);
+					} {
+						// otherwise insert a rest
+						seq.add(\rest);
+					};
+				};
+
+				seq.postln;
+
+				val = Pseq(seq, inf);
+			};
+
+			this.updatePattern(selector, val);
 		} {
 			// if it's a getter return the pattern that's already set
-			^pProxies[selector];
+			^pProxies[selector].source;
 		};
-	}
-
-	// here we use object's depemdacy mechanism to recive update from parent
-	// or environment
-	update { |changer param pattern|
-		[changer, param, pattern].postln;
-		this.updatePattern(param, pattern)
 	}
 }
 

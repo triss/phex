@@ -1,4 +1,4 @@
-MySpecs {
+PhexSpecs {
 	*add {
 		// specs for adsr
 		Spec.add(\att, [0.001, 32, \exp, 0, 0.1]);
@@ -20,5 +20,8 @@ MySpecs {
 
 		// startPos for samples
 		Spec.add(\startPos, [0, 15/16]);
+
+		// legato
+		Spec.add(\legato, [0.1, 16, \exp]);
 	}
 }
