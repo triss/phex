@@ -10,6 +10,7 @@ PhexEnv {
 		var setBpm, makeMixerWindow;
 
 		// set up MIDI connectivity
+		MIDIClient.init;
 		MIDIIn.connectAll;
 
 		// set up a load of useful specs
